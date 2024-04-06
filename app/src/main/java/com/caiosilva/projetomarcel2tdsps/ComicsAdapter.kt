@@ -10,13 +10,27 @@ import com.caiosilva.projetomarcel2tdsps.databinding.ComicListItemBinding
 
 class ComicsAdapter : ListAdapter<ComicBookData, ComicsAdapter.ComicsViewHolder>(DiffCallback()) {
 
+    var onclickListener: (commicBookData: ComicBookData) -> Unit = {}
+
     inner class ComicsViewHolder(val binding: ComicListItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(comicBookData: ComicBookData) {
             binding.textViewTitle.text = comicBookData.title
             binding.textViewDescription.text = comicBookData.description
             binding.textViewPageCount.text = comicBookData.pageCount.toString()
+            binding.root.setOnClickListener {
+                onclickListener(comicBookData)
+            }
         }
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return when (getItem(position).isHero) {
+            true -> VIEW_TYPE_HERO
+            false -> VIEW_TYPE_VILLAIN
+            else -> 0
+        }
+//         return if (getItem(position).title == "") { 1 } else { 2}
     }
 
     class DiffCallback : DiffUtil.ItemCallback<ComicBookData>() {
@@ -41,5 +55,10 @@ class ComicsAdapter : ListAdapter<ComicBookData, ComicsAdapter.ComicsViewHolder>
         holder.bind(
             getItem(position)
         )
+    }
+
+    companion object {
+        private const val VIEW_TYPE_HERO = 1
+        private const val VIEW_TYPE_VILLAIN = 2
     }
 }

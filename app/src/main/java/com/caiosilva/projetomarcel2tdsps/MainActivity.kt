@@ -22,6 +22,9 @@ class MainActivity : ComponentActivity() {
         val lista = listComic()
         val adapter: ComicsAdapter = ComicsAdapter()
         adapter.submitList(lista)
+        adapter.onclickListener = {
+            println(it.title)
+        }
 
         binding.recyclewViewComics.adapter = adapter
         binding.recyclewViewComics.layoutManager = LinearLayoutManager(this)
