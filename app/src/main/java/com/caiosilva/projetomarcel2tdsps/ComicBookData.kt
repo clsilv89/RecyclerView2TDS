@@ -5,5 +5,6 @@ data class ComicBookData(
     val title: String,
     val description: String,
     val pageCount: Int,
+    val imageUrl: String,
     val isHero: Boolean? = null
 )
