@@ -24,7 +24,9 @@ class SecondActivity : ComponentActivity() {
     }
 
     private fun setupViews() {
-        val url = intent.getStringExtra("COMIC_BOOK_IMAGE_URL").orEmpty()
+        val comicBookData =
+            intent.getStringExtra("COMIC_BOOK_DATA").orEmpty().fromJson(ComicBookData::class.java)
+        val url = comicBookData.imageUrl
 
         binding.textViewSecondActivity.setOnLongClickListener(object : View.OnLongClickListener {
             override fun onLongClick(v: View?): Boolean {
@@ -37,9 +39,11 @@ class SecondActivity : ComponentActivity() {
     }
 
     private fun getExtras() {
-        val extraString = intent.getStringExtra("COMIC_BOOK_DESCRIPTION")
+        val comicBookData =
+            intent.getStringExtra("COMIC_BOOK_DATA").orEmpty().fromJson(ComicBookData::class.java)
+        val description = comicBookData.description
 
-        binding.textViewSecondActivity.text = extraString
+        binding.textViewSecondActivity.text = description
     }
 
     private fun openUrl(url: String) {
