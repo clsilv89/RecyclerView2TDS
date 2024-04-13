@@ -2,13 +2,21 @@ package com.caiosilva.projetomarcel2tdsps
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.compose.material3.TopAppBar
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.caiosilva.projetomarcel2tdsps.databinding.ActivityMainBinding
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private val retrofit = RetrofitClient()
+        .getClient("https://jsonplaceholder.typicode.com/")
+        .create(ApiService::class.java)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -16,20 +24,79 @@ class MainActivity : ComponentActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setupRecyclerView()
+        getPhotos()
+        getPosts()
     }
 
-    private fun setupRecyclerView() {
+    private fun setupRecyclerView(photos: List<PhotoPost>) {
         val lista = listComic()
         val adapter: ComicsAdapter = ComicsAdapter()
-        adapter.submitList(lista)
+        adapter.submitList(photos)
         adapter.onclickListener = {
-            useIntent(it)
+//            useIntent(it)
+            sendPost(it)
             println(it.title)
         }
 
         binding.recyclewViewComics.adapter = adapter
         binding.recyclewViewComics.layoutManager = LinearLayoutManager(this)
+    }
+
+    private fun getPosts() {
+        val posts = retrofit.getPosts()
+
+        posts.enqueue(object : Callback<List<Post>> {
+            override fun onResponse(call: Call<List<Post>>, response: Response<List<Post>>) {
+//                println("OnResponse : ${response.body()}")
+                Toast.makeText(
+                    this@MainActivity,
+                    response.body()?.size.toString(),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
+            override fun onFailure(call: Call<List<Post>>, t: Throwable) {
+                println("OnFailure : ${t.cause}")
+            }
+
+        })
+    }
+
+    private fun getPhotos() {
+        val getPhotos = retrofit.getPhotos()
+
+        getPhotos.enqueue(object : Callback<List<PhotoPost>> {
+            override fun onResponse(
+                call: Call<List<PhotoPost>>,
+                response: Response<List<PhotoPost>>
+            ) {
+                println("OnResponse : ${response.body()}")
+                setupRecyclerView(photos = response.body().orEmpty())
+            }
+
+            override fun onFailure(call: Call<List<PhotoPost>>, t: Throwable) {
+                println("OnFailure : ${t.cause}")
+            }
+        })
+    }
+
+    private fun sendPost(photoPost: PhotoPost) {
+        val post = PostPost(
+            title = photoPost.title,
+            body = photoPost.thumbnailUrl,
+            userId = photoPost.id
+        )
+        val sentPost = retrofit.sendPost(post)
+
+        sentPost.enqueue(object : Callback<Post> {
+            override fun onResponse(call: Call<Post>, response: Response<Post>) {
+                Toast.makeText(this@MainActivity, response.body()?.title, Toast.LENGTH_SHORT).show()
+            }
+
+            override fun onFailure(call: Call<Post>, t: Throwable) {
+                println("OnFailure : ${t.cause}")
+            }
+        })
     }
 
     private fun useIntent(comicBookData: ComicBookData) {
